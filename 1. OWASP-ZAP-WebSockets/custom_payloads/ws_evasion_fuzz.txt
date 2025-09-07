@@ -1,0 +1,10 @@
+{"action":"\u0072\u0065\u0067\u0069\u0073\u0074\u0065\u0072"}
+{"action":"\\\"register\\\""}
+{"action":"\\u0000"}
+{"action":"\x00"}
+{"action":"\xFF"}
+{"action":"\\x73\\x74\\x61\\x72\\x74"}
+{"action":"\\\\register"}
+{"action":"//register"}
+{"action":"/*register*/"}
+{"action":"‘ OR 1=1 --"}

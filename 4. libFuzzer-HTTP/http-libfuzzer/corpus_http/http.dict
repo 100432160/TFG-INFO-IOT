@@ -1,0 +1,5 @@
+"HTTP/1.1" "HTTP/1.0" "200" "204" "301" "302" "400" "404" "500"
+"Content-Length:" "Transfer-Encoding:" "chunked" "Connection:" "keep-alive" "close"
+"Content-Encoding:" "gzip" "deflate" "br"
+"Location:" "Set-Cookie:" "Vary:" "Date:"
+"\x0d\x0a" "\x0a\x0a"

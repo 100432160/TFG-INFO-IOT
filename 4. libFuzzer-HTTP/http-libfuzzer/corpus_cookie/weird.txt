@@ -1,0 +1,1 @@
+;=; ;foo=; ;=bar; secure; HTTPONLY; samesite=none

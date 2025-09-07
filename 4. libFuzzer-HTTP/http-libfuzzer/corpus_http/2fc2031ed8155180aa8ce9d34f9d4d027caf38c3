@@ -1,0 +1,44 @@
+HTTP/0.1  
+e: Äct 4  
+e: eÄ
+ HTTP/0.2  
+e: Û1#%OÄct 
+ Û04  
+e: eÄ
+ ß1#Û0# 0.2  
+e: et 
+ Û02  
+e: eÄct 
+ Û1#%OÄct 
+ Û0: eÄ
+ HTTP/0.2  
+e: Û1#%OÄct  
+ Û02  
+e: eÄct 
+ Û1#%OÄct 
+ Û04  
+e: eÄ
+ ß1#Û0#  
+e: e 
+ Û1#%OÄct 4  
+e: eÄ
+ ß1#Û0# 0.2  
+e: et 
+ Û02  
+e: eÄct 
+ Û04  
+e: eÄ
+ ß1#Û0# 0.2  
+e: et 
+ Û02  
+e: eÄct 
+ Û1#%OÄct 
+ Û04  
+e: eÄ
+ ß1#Û0#  
+e: e 
+ Û1#%OÄct Û%#1ct 
+ Û1  
+e: eOÄct 
+#%OÄContent-Encoding:HTTP/1.1" "HTTP/1.0" "200" "204" "301" "302" "400" "404" "500" "gzip" "dåflate": eOÄct)
+#%OÄContent-Encoding:" "gziÛ				iõÿ0#%Oÿe

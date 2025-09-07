@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+SttpOnlyK
+
+Set-Coojie: b=2; ttpOnly
+Set-Cookie: b=2; Secure
+Var-Agent
+Contee; SameSite=None
+Var-Agent
+Content-Length: 0
+

@@ -1,0 +1,10 @@
+{"action":"hack"}
+{"action":"DROP TABLE users"}
+{"action":"shutdown"}
+{"action":"unknownCommand"}
+{"action":"reboot"}
+{"event":"99999"}
+{"event":"../etc/passwd"}
+{"action":"😈"}
+{"action":"🚀launch"}
+{"action":"%00"}

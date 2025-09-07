@@ -1,0 +1,9 @@
+HTTP/0.2   b
+e: TC.2 HTTP/1.1" "HTTP/1.0"±"200" "408" "301" "302" "400" "404" "500  
+Content-Length: -0.2   b
+e: TC.2 HTTP/1.q" Con0  
+Content-Length: -20200
+
+:ÿÿÿÿÿÿÿ28200
+
+:ÿÿÿÿÿÿÿÿ777

@@ -1,0 +1,11 @@
+null
+12345
+true
+[]
+["unexpected"]
+{}
+{"invalid":"json"}
+{"action":null}
+{"action":123}
+{"action":[]}
+{"action":{"nested":"value"}}

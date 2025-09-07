@@ -1,0 +1,10 @@
+{"action":"register","__proto__":"exploit"}
+{"action":"register","constructor":"alert(1)"}
+{"action":"register","<script>":"x"}
+{"action":"register","🍕":"pizza"}
+{"action":"register","💣":"boom"}
+{"action":"register","extra_field":"value"}
+{"action":"register","debug":"true"}
+{"action":"register","null":null}
+{"action":"register","undefined":undefined}
+{"action":"register","":"emptykey"}
