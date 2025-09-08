@@ -1,0 +1,47 @@
+#################################################################
+### TERMINAL A
+#################################################################
+# Asegura variables (ajusta si hace falta)
+export THINGER_HOST=10.0.2.15
+export THINGER_PORT=1883
+export THINGER_USER=arturo_100432160
+export THINGER_DEVICE_ID=esp32test
+export THINGER_DEVICE_PW=123456
+
+# Terminal A — captura tráfico en 1883
+sudo tshark -i any -f "tcp port $THINGER_PORT" -w /tmp/unsubscribe_multi.pcapng
+
+#################################################################
+### TERMINAL B
+#################################################################
+export THINGER_HOST=10.0.2.15
+export THINGER_PORT=1883
+export THINGER_USER=arturo_100432160
+export THINGER_DEVICE_ID=esp32test
+export THINGER_DEVICE_PW=123456
+
+mosquitto_sub -d \
+  -h "$THINGER_HOST" -p "$THINGER_PORT" \
+  -i "$THINGER_DEVICE_ID" \
+  -u "$THINGER_USER" -P "$THINGER_DEVICE_PW" \
+  -V mqttv311 \
+  -t 'a/b' -t 'sensors/+/temp' -t 'logs/#' \
+  -U 'a/b' -U 'sensors/+/temp' -U 'logs/#' \
+  -W 1 >/dev/null
+
+# primero se suscribe con -t
+# -U a/b = enviar UNSUBSCRIBE de 'a/b'
+  
+#################################################################
+### TERMINAL A (again)
+#################################################################
+# Extrae el primer paquete CONNECT (msgtype==1) -> hex -> binario -> base64
+# Usando el payload TCP crudo
+sudo tshark -r /tmp/unsubscribe_multi.pcapng -Y 'mqtt and mqtt.msgtype==10' \
+  -T fields -e tcp.payload \
+| head -n1 | tr -d ':' | xxd -r -p | base64 \
+> ~/mqtt_fuzz/valid-cases/unsubscribe/unsubscribe_multi_first.b64
+
+# Comprueba que hay contenido:
+wc -c ~/mqtt_fuzz/valid-cases/unsubscribe/unsubscribe_multi_first.b64
+head -n1 ~/mqtt_fuzz/valid-cases/unsubscribe/unsubscribe_multi_first.b64

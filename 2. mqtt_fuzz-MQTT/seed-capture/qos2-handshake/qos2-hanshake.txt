@@ -1,0 +1,78 @@
+#################################################################
+### TERMINAL A
+#################################################################
+# Asegura variables (ajusta si hace falta)
+export THINGER_HOST=10.0.2.15
+export THINGER_PORT=1883
+export THINGER_USER=arturo_100432160
+export THINGER_DEVICE_ID=esp32test
+export THINGER_DEVICE_PW=123456
+
+# Terminal A — captura tráfico en 1883
+sudo tshark -i any -f "tcp port $THINGER_PORT" -w /tmp/qos2_handshake.pcapng
+
+#################################################################
+### TERMINAL B
+#################################################################
+export THINGER_HOST=10.0.2.15
+export THINGER_PORT=1883
+export THINGER_USER=arturo_100432160
+export THINGER_DEVICE_ID=esp32test
+export THINGER_DEVICE_PW=123456
+
+mosquitto_pub -d \
+  -h "$THINGER_HOST" -p "$THINGER_PORT" \
+  -i "$THINGER_DEVICE_ID" \
+  -u "$THINGER_USER" -P "$THINGER_DEVICE_PW" \
+  -V mqttv311 \
+  -q 2 \
+  -t a/b/c \
+  -m "q2"
+  
+# Vas a ver en la salida -d algo tipo: 
+# Sending PUBLISH (q2) → Received PUBREC → Sending PUBREL → Received PUBCOMP.  
+    
+#################################################################
+### TERMINAL A (again)
+#################################################################
+# Extrae el primer paquete CONNECT (msgtype==1) -> hex -> binario -> base64
+# Usando el payload TCP crudo
+# PUBLISH
+sudo tshark -r /tmp/qos2_handshake.pcapng -Y 'mqtt and mqtt.msgtype==3' \
+  -T fields -e tcp.payload \
+| head -n1 | tr -d ':' | xxd -r -p | base64 \
+> ~/mqtt_fuzz/valid-cases/qos2/publish.b64
+
+# Comprueba que hay contenido:
+wc -c ~/mqtt_fuzz/valid-cases/qos2/publish.b64
+head -n1 ~/mqtt_fuzz/valid-cases/qos2/publish.b64
+
+# PUBREC
+sudo tshark -r /tmp/qos2_handshake.pcapng -Y 'mqtt and mqtt.msgtype==5' \
+  -T fields -e tcp.payload \
+| head -n1 | tr -d ':' | xxd -r -p | base64 \
+> ~/mqtt_fuzz/valid-cases/qos2/pubrec.b64
+
+# Comprueba que hay contenido:
+wc -c ~/mqtt_fuzz/valid-cases/qos2/pubrec.b64
+head -n1 ~/mqtt_fuzz/valid-cases/qos2/pubrec.b64
+
+# PUBREL
+sudo tshark -r /tmp/qos2_handshake.pcapng -Y 'mqtt and mqtt.msgtype==6' \
+  -T fields -e tcp.payload \
+| head -n1 | tr -d ':' | xxd -r -p | base64 \
+> ~/mqtt_fuzz/valid-cases/qos2/pubrel.b64
+
+# Comprueba que hay contenido:
+wc -c ~/mqtt_fuzz/valid-cases/qos2/pubrel.b64
+head -n1 ~/mqtt_fuzz/valid-cases/qos2/pubrel.b64
+
+# PUBCOMP
+sudo tshark -r /tmp/qos2_handshake.pcapng -Y 'mqtt and mqtt.msgtype==7' \
+  -T fields -e tcp.payload \
+| head -n1 | tr -d ':' | xxd -r -p | base64 \
+> ~/mqtt_fuzz/valid-cases/qos2/pubcomp.b64
+
+# Comprueba que hay contenido:
+wc -c ~/mqtt_fuzz/valid-cases/qos2/pubcomp.b64
+head -n1 ~/mqtt_fuzz/valid-cases/qos2/pubcomp.b64
