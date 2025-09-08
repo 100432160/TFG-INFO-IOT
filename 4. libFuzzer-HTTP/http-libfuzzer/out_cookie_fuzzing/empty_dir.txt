@@ -1,0 +1,1 @@
+Si no creo este fichero de texto, el directorio vacío no se subía a GitHub y parecía que no existía
