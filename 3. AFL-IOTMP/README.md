@@ -1,15 +1,50 @@
-**Describir la ejecución de la prueba**
+## Sobre AFL y AFL++
+
+*American Fuzzy Lop (AFL)* es uno de los *fuzzers* más conocidos y utilizados en el mundo de la ciberseguridad. Fue desarrollado originalmente por Michal Zalewski y se convirtió en una referencia por su capacidad para descubrir fallos de seguridad importantes en diferentes tipos de software. La clave de AFL es en su enfoque de *fuzzing* guiado por cobertura: en lugar de limitarse a generar entradas aleatorias, introduce mutaciones sobre los casos base de prueba (*seeds*) y, gracias a la instrumentación del código, mide si se accede a nuevas rutas de ejecución. Esto permite que el *fuzzer* aprenda y evolucione, explorando progresivamente zonas cada vez más profundas del programa que se analiza.
+
+En el *paper* en el que se basa este trabajo se utilizó AFL en su versión original, pero en este caso se ha optado por emplear AFL++ (*AFLPlusPlus*), un *fork* más moderno y activo que incorpora numerosas mejoras. AFL++ es más rápido, tiene más y mejores opciones de mutación e instrumentación, y añade soporte para módulos personalizados. [CITA?]
+
+Una de las principales ventajas de AFL++ y el *fuzzing* basado en cobertura de código es que no necesita que el protocolo esté exhaustivamente documentado para ser eficaz. Mientras que enfoques como el *protocol-aware fuzzing*, que requiere un conocimiento detallado de la estructura de los mensajes, o el *fuzzing* aleatorio, que no es muy eficaz, AFL++ trabaja directamente sobre el código fuente del programa, introduciendo entradas malformadas y observando cómo varía el flujo de ejecución. Esta característica hace que esta herramienta sea especialmente adecuada para protocolos poco documentados o propietarios, como por ejemplo IOTMP.
+
 ---
+
+## Repositorios de AFL y AFL++
+
+[GitHub - google/AFL: american fuzzy lop - a security-oriented fuzzer](https://github.com/google/AFL?tab=readme-ov-file)
+
+https://github.com/antonio-morales/Fuzzing101
+
+https://github.com/AFLplusplus/AFLplusplus
+
+https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/README.md
+
+---
+
+## Repositorios de documentación de IOTMP y Thinger.io
+
+https://github.com/thinger-io/Docs
+
+https://github.com/thinger-io/IOTMP
+
+---
+
+## Repositorio con el código fuente que analiza mensajes IOTMP
+
+[GitHub - thinger-io/IOTMP-Linux: IOTMP Client for Linux devices](https://github.com/thinger-io/IOTMP-Linux/tree/master)
+
+---
+
+## Pasos para realizar la prueba:
 
 ### 0. Pasos previos
 
-1. Instalar imagen de Docker
+1. Instalar imagen de Docker de AFL++
     
     ```bash
     docker pull aflplusplus/aflplusplus:latest
     ```
     
-2. Clonar el repositorio
+2. Clonar el repositorio con el código fuente
     
     ```bash
     mkdir -p ~/AFL-IOTMP-2
@@ -20,7 +55,6 @@
 3. Lanzar el contenedor montando esa carpeta en ‘/src’. Le damos un nombre para poder volver a abrir el contenedor de nuevo más tarde.
     
     ```bash
-    # Lanza el contenedor montando esa carpeta en /src
     docker run --name afl-iotmp-2 -it \
       -v "$HOME/AFL-IOTMP-2":/src \
       -w /src \
@@ -28,48 +62,31 @@
     ```
     
     - `docker run` → crea y arranca un nuevo contenedor basado en una imagen.
-    - `-name afl-iotmp-2` → asigna un nombre identificativo al contenedor (`afl-iotmp-2`) para poder referirse a él más adelante.
-    - `it` → combina `i` (modo interactivo: mantiene la entrada estándar abierta) y `t` (asigna un pseudo-terminal), lo que permite trabajar con una consola dentro del contenedor.
-    - `v "$HOME/AFL-IOTMP-2":/src` → monta un volumen, enlazando la carpeta local `$HOME/AFL-IOTMP-2` con `/src` dentro del contenedor. Así el código y los resultados se guardan en tu máquina aunque el contenedor se borre.
-    - `w /src` → define el *working directory* (directorio de trabajo) dentro del contenedor al arrancar, en este caso `/src`.
-    - `aflplusplus/aflplusplus:latest` → indica la imagen de Docker a usar, en este caso la oficial de AFL++ en su versión más reciente (`latest`).
+    - `--name afl-iotmp-2` → asigna un nombre identificativo al contenedor (`afl-iotmp-2`) para poder referirse a él más adelante.
+    - `-it` → combina `i` (modo interactivo: mantiene la entrada estándar abierta) y `t` (asigna un pseudo-terminal), lo que permite trabajar con una consola dentro del contenedor.
+    - `-v "$HOME/AFL-IOTMP-2":/src` → monta un volumen, enlazando la carpeta local `$HOME/AFL-IOTMP-2` con `/src` dentro del contenedor. Así el código y los resultados se guardan en tu máquina aunque el contenedor se borre.
+    - `-w /src` → define el *working directory* (directorio de trabajo) dentro del contenedor al arrancar, en este caso `/src`.
+    - `aflplusplus/aflplusplus:latest` → indica la imagen de Docker a utilizar, en este caso la oficial de AFL++ en su versión más reciente (`latest`).
     - `bash` → comando inicial que se ejecuta dentro del contenedor; abre una shell interactiva Bash.
     
     Para reabrir el contenedor creado previamente:
     
     ```bash
-    # las siguientes veces
+    # Para iniciar el contenedor las siguientes veces
     docker start -ai afl-iotmp-2
     ```
     
     - `docker start` → arranca un contenedor que ya ha sido creado previamente (pero que ahora está detenido).
-    - `a` → adjunta la salida del contenedor a la terminal actual (para ver lo que ocurre dentro).
-    - `i` → mantiene la entrada estándar abierta, de forma que se puede interactuar.
-    - `afl-iotmp-2` → nombre del contenedor que queremos arrancar (el mismo que definimos con `-name`).
+    - `-a` → adjunta la salida del contenedor a la terminal actual (para ver lo que ocurre dentro).
+    - `-i` → mantiene la entrada estándar abierta, de forma que se puede interactuar.
+    - `afl-iotmp-2` → nombre del contenedor que queremos arrancar (el mismo que definimos con `--name`).
+    
 
----
-
-### **1. Crear un punto de entrada pequeño (“HARNESS”):**
+### **1. Crear un punto de entrada al código que queremos probar (“HARNESS”):**
 
 Necesitamos un ejecutable (o mini-programa “harness”) que **lea datos por stdin/archivo** y los pase al **parser IoTMP**. Cuanto más pequeño y directo sea, mejor fuzzer saldrá.
 
-- EL ***harness*** es un adaptador entre AFL++ y tu código. Su misión es recibir bytes (desde un archivo o `stdin`) y entregarlos directamente al código que parsea IoTMP, sin red, sin hilos, sin esperas. Así AFL puede mutar esos bytes y medir que rutas recorre el programa.
-    - ¿Por qué no usar el binario “grande” tal cual?
-        
-        Porque suele esperar sockets, credenciales, bucles infinitos, etc. Eso hace al fuzzing **lento, inestable y poco medible**. El harness recorta todo eso y deja **solo lo esencial: “bytes → parser”**.
-        
-    - ¿Qué hace exactamente el harness?
-        1. **Lee** un input (AFL lo pasa con `@@` o por `stdin`).
-        2. **Llama** a la **función que decodifica** el mensaje IoTMP (ideal: el parser real del repo).
-        3. **Termina rápido** (sin bucles de espera, sin reconectar nada).
-        4. Si hay un bug, el proceso **crashea** y AFL lo detecta.
-    - Qué hace a un buen harness (reglas sencillas)
-        - **Pequeño y directo** (solo lectura de input + llamada al parser).
-        - **Determinista** (mismo input → mismo resultado).
-        - **Sin I/O externo** (nada de red, ficheros extra, etc.).
-        - **Un input por ejecución** (entrada corta, salir).
-        - **Chequeos básicos de límites** (si el input es corto, salir limpio).
-- Creamos el `harness` más pequeño posible que haga exactamente: lee bytes → decodifica 2 varints (type, size) → llama a `iotmp_memory_decoder.decode(...)` con el body
+- Creamos el `harness` más pequeño posible que haga: lee bytes → decodifica 2 varints (type, size) → llama a `iotmp_memory_decoder.decode(...)` con el body
     - Dentro del contenedor (`/src/iotmp_harness/iotmp_harness.cpp`):
         
         ```bash
@@ -146,19 +163,9 @@ Necesitamos un ejecutable (o mini-programa “harness”) que **lea datos por st
         ```
         
     - Definir un allocator concreto para `protoson::pool`
-        - ***Qué es `protoson::pool` y por qué necesito un “allocator?***
-            - `PSON` es el formato/árbol de datos que usa IoTMP (objetos, arrays, strings, etc.). Al **decodificar** un mensaje, el parser va **creando nodos** (arrays, objetos, valores) en memoria.
-            - Para crear esos nodos, la librería usa una **capa de asignación de memoria** propia (un *memory allocator*) en el **namespace `protoson`**.
-                
-                En el código del core existe una **declaración global** parecida a: `extern memory_allocator& pool;`
-                
-                → Eso significa: *“en algún sitio debe existir una **definición** concreta de `pool` a la que enlazar”*.
-                
-            - Si **no** la defines tú, el enlazador se quejará con un *undefined symbol* (no sabe de dónde sacar ese `pool`).
-            - En el harness, definimos una implementación **mínima** de allocator (`harness_allocator`) que simplemente llama a `std::malloc`/`std::free`, y **exponemos** el símbolo global
-            - ¿Por qué así de simple? → Porque para fuzzing queremos **lo más directo y determinista posible**. No necesitamos un *pool* sofisticado; con `malloc/free` basta y además **visibiliza** problemas de memoria cuando uses ASAN.
-            
+        - El protocolo IOTMP utiliza internamente PSON, un formato de datos donde los mensajes se decodifican en forma de objetos, *arrays* o *strings*. Cada vez que el parser crea uno de estos elementos, necesita reservar memoria, y para ello recurre a una capa de asignación llamada `protoson::pool`.
         - Dentro del contenedor (`/src/iotmp_harness/protoson_pool_def.cpp`):
+        
         ```cpp
         #include "thinger/iotmp/core/pson.h"
         #include <cstdlib>
@@ -175,12 +182,11 @@ Necesitamos un ejecutable (o mini-programa “harness”) que **lea datos por st
           memory_allocator& pool = g_pool_impl;  // define el símbolo global
         }
         ```
+        
 
----
+### **2. Compilar el código fuente con instrumentación:**
 
-### **2. Compilar con “sensores” (instrumentación):**
-
-Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “cuente” a qué ramas entra. Sin esto, AFL no sabe por dónde va y no puede guiarse.
+Construimos el código fuente del repositorio `IOTMP-Linux` con los compiladores de AFL++ para instrumentarlo (”sensores” que permiten que el binario sepa a qué ramas entra durante la ejecución). Sin esto, AFL no sabe por dónde va y no puede guiarse en la creación de nuevos inputs.
 
 1. **Antes de compilar, instalar dependencias del sistema dentro del contenedor:**
     
@@ -202,7 +208,7 @@ Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “c
     pkg-config --cflags --libs openssl || true
     ```
     
-2. **Build ASAN + AFL del core IoTMP** → esta build dará mejor señal en errores de memoria dentro del core, no solo del harness
+- **Build con ASAN + AFL del core IoTMP** → esta build dará mejor señal en errores de memoria dentro del core, no solo del harness
     1. Preparar carpetas y compilers de AFL++
         
         ```bash
@@ -229,7 +235,7 @@ Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “c
         ```
         
     3. Extraer una librería sólo del core (opcional pero útil)
-        - CMake te habrá generado `libthinger_iotmp.a` (o similar). Creamos **`libiotmp_core.a`** solo con objetos de `thinger/iotmp/core/**` para evitar dependencias innecesarias.
+        - CMake habrá generado `libthinger_iotmp.a`. Creamos **`libiotmp_core.a`** solo con objetos de `thinger/iotmp/core/**` para evitar dependencias innecesarias.
         
         ```bash
         # En el mismo build-asan:
@@ -238,48 +244,31 @@ Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “c
         ar rcs libiotmp_core_asan.a $OBJS
         ranlib libiotmp_core_asan.a
         
-        # Comprobar que no arrastra spdlog/fmt (debería NO salir nada):
+        # Comprobar que no arrastra spdlog/fmt (debería no salir nada):
         nm -C libiotmp_core_asan.a | egrep -i 'spdlog|fmt::' || echo "OK: sin spdlog/fmt en core (ASAN)"
         
-        # Deja la .a en una ruta estable:
+        # Dejar la .a en una ruta estable:
         cp -f libiotmp_core_asan.a /src/IOTMP-Linux/build-asan/libiotmp_core.a
         ```
         
-3. **Compilar el harness y enlazar contra el core:**
-    
-    ```bash
-    mkdir -p /src/install
-    
-    export CXX=afl-clang-fast++
-    
-    $CXX -std=c++17 -g -O1 \
-      -fsanitize=address -fno-omit-frame-pointer \
-      -I/src/IOTMP-Linux/src \
-      /src/iotmp_harness/iotmp_harness.cpp \
-      /src/iotmp_harness/protoson_pool_def.cpp \
-      /src/IOTMP-Linux/build-asan/libiotmp_core.a \
-      -lssl -lcrypto -lpthread -ldl \
-      -o /src/install/iotmp_harness_dbg
-    ```
-    
-4. **(OPCIONAL) Prueba de humo para verificar que corre**
-    
-    ```bash
-    # OK vacío: type=1 (OK), size=0
-    printf "\x01\x00" | /src/install/iotmp_harness_dbg >/dev/null && echo "ok_empty ✅" || echo "ok_empty ❌"
-    
-    # ERROR vacío: type=2 (ERROR), size=0
-    printf "\x02\x00" | /src/install/iotmp_harness_dbg >/dev/null && echo "error_empty ✅" || echo "error_empty ❌"
-    
-    # Body vacío para CONNECT (si tu decoder acepta PSON vacío como válido o lo ignora)
-    # type=3 (CONNECT), size=1? ojo: en tu harness exiges que quepa; aquí dejamos size=0 para smoke:
-    printf "\x03\x00" | /src/install/iotmp_harness_dbg >/dev/null && echo "connect_empty ✅" || echo "connect_empty ❌"
-    ```
-    
-    ![image.png](attachment:27fbd197-c63c-4fad-93c1-6e217549d732:image.png)
-    
-
-- ***Build NO ASAN + AFL del core IoTMP →*** Esta build sirve para confirmar “crash real” sin ASAN
+    4. **Compilar el harness y enlazar contra el core:**
+        
+        ```bash
+        mkdir -p /src/install
+        
+        export CXX=afl-clang-fast++
+        
+        $CXX -std=c++17 -g -O1 \
+          -fsanitize=address -fno-omit-frame-pointer \
+          -I/src/IOTMP-Linux/src \
+          /src/iotmp_harness/iotmp_harness.cpp \
+          /src/iotmp_harness/protoson_pool_def.cpp \
+          /src/IOTMP-Linux/build-asan/libiotmp_core.a \
+          -lssl -lcrypto -lpthread -ldl \
+          -o /src/install/iotmp_harness_dbg
+        ```
+        
+- ***Build sin ASAN + AFL del core IoTMP →*** Esta build sirve para confirmar que hay *crashes* reales sin ASAN (no causados solo por corrupción de memoria)
     1. Preparar carpetas y compilers de AFL++
         
         ```bash
@@ -315,7 +304,7 @@ Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “c
         cp -f libiotmp_core_noasan.a /src/IOTMP-Linux/build-noasan/libiotmp_core.a
         ```
         
-    4. Compilar el harness NO ASAN:
+    4. Compilar el harness sin ASAN:
         
         ```bash
         export CXX=afl-clang-fast++
@@ -329,76 +318,53 @@ Construimos `IOTMP-Linux` con los compiladores de AFL++ para que el binario “c
           -o /src/install/iotmp_harness_noasan
         ```
         
-    5. (OPCIONAL) Prueba de humo para comprobar que corre:
-        
-        ```bash
-        # OK vacío: type=1 (OK), size=0
-        printf "\x01\x00" | /src/install/iotmp_harness_noasan >/dev/null && echo "ok_empty ✅" || echo "ok_empty ❌"
-        
-        # ERROR vacío: type=2 (ERROR), size=0
-        printf "\x02\x00" | /src/install/iotmp_harness_noasan >/dev/null && echo "error_empty ✅" || echo "error_empty ❌"
-        
-        # Body vacío para CONNECT (si tu decoder acepta PSON vacío como válido o lo ignora)
-        # type=3 (CONNECT), size=1? ojo: en tu harness exiges que quepa; aquí dejamos size=0 para smoke:
-        printf "\x03\x00" | /src/install/iotmp_harness_noasan >/dev/null && echo "connect_empty ✅" || echo "connect_empty ❌"
-        ```
-        
-        ![image.png](attachment:285b8025-7726-4b64-b598-3ac672006c2e:image.png)
-        
-
----
+    
 
 ### **3. Crear semillas de arranque (seeds):**
 
-Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirven para que AFL tenga por dónde empezar a mutar con sentido.
+Creamos varias semillas base que ayudarán a AFL++ a hacer mutaciones que aumenten la cobertura del código.
 
-- Con **3–5 seeds bien formadas** basta para arrancar. AFL++ es *coverage-guided* y mutará desde ahí. Luego puedes añadir 1–2 más si ves poca cobertura.
-- Cada mensaje = **[type(varint)][size(varint)][body(size bytes)]**.
-- Para el **body** usaremos **pares varint (key,value)**, con `key = (field_id << 3) | wire_type`.
-- Aquí usamos **wire_type = 0 (Varint)** para evitar PSON al principio.
-- Crea las seeds así (todas válidas con tu harness):
-    
-    ```bash
-    mkdir -p /src/seeds_iotmp
-    
-    # 1) OK vacío (type=0x01, size=0) — sólo header
-    printf '\x01\x00' > /src/seeds_iotmp/ok_empty.bin
-    
-    # 2) CONNECT con un varint (fid=1,val=1)
-    # body: 0x08 0x01  => key=(fid=1, wire=0) -> 0x08 ; value=0x01 ; size=2
-    printf '\x03\x02\x08\x01' > /src/seeds_iotmp/connect_f1v1.bin
-    
-    # 3) STREAM DATA con dos varints (fid1=1,val=1) (fid2=2,val=0)
-    # body: 0x08 0x01 0x10 0x00  -> size=4
-    printf '\x0A\x04\x08\x01\x10\x00' > /src/seeds_iotmp/stream_two_var.bin
-    
-    # 4) DESCRIBE con cuerpo grande (128 bytes) para forzar size varint a 2 bytes (0x80 0x01)
-    python3 - <<'PY'
-    body = bytes([0x08,0x00])*64             # 64 pares (key=0x08,val=0x00) => 128 bytes
-    msg  = bytes([0x07, 0x80, 0x01]) + body  # type=0x07, size=128
-    open('/src/seeds_iotmp/describe_128.bin','wb').write(msg)
-    PY
-    
-    # 5) ERROR con campo fid=15 y valor 127
-    # key=(15<<3)|0 = 0x78; value=0x7F -> size=2
-    printf '\x02\x02\x78\x7f' > /src/seeds_iotmp/error_f15_127.bin
-    
-    # 6) CONNECT con PSON vacío (wire type = 1), body = 0x09 0x00
-    # 0x09 = key con wire=1 (PSON) y fid=1; 0x00 = PSON vacío mínimo (según implementación)
-    # => size=2 para que encaje exactamente con el body
-    printf '\x03\x02\x09\x00' > /src/seeds_iotmp/connect_empty_pson.bin
-    
-    # 7) RUN con stream_id=0 (varint simple), body=0x08 0x00 -> size=2
-    printf '\x06\x02\x08\x00' > /src/seeds_iotmp/run_sid0.bin
-    
-    # 8) START con PSON vacío: body=0x09 0x00 -> size=2
-    printf '\x08\x02\x09\x00' > /src/seeds_iotmp/start_empty_pson.bin
-    
-    ```
+Estas semillas valen tanto para la prueba con ASAN como para la prueba sin ASAN.
 
----
+```bash
+mkdir -p /src/seeds_iotmp
 
-### **4. Lanzar AFL++ (tu harness lee `stdin`):**
+# 1) OK vacío (type=0x01, size=0) — sólo header
+printf '\x01\x00' > /src/seeds_iotmp/ok_empty.bin
+
+# 2) CONNECT con un varint (fid=1,val=1)
+# body: 0x08 0x01  => key=(fid=1, wire=0) -> 0x08 ; value=0x01 ; size=2
+printf '\x03\x02\x08\x01' > /src/seeds_iotmp/connect_f1v1.bin
+
+# 3) STREAM DATA con dos varints (fid1=1,val=1) (fid2=2,val=0)
+# body: 0x08 0x01 0x10 0x00  -> size=4
+printf '\x0A\x04\x08\x01\x10\x00' > /src/seeds_iotmp/stream_two_var.bin
+
+# 4) DESCRIBE con cuerpo grande (128 bytes) para forzar size varint a 2 bytes (0x80 0x01)
+python3 - <<'PY'
+body = bytes([0x08,0x00])*64             # 64 pares (key=0x08,val=0x00) => 128 bytes
+msg  = bytes([0x07, 0x80, 0x01]) + body  # type=0x07, size=128
+open('/src/seeds_iotmp/describe_128.bin','wb').write(msg)
+PY
+
+# 5) ERROR con campo fid=15 y valor 127
+# key=(15<<3)|0 = 0x78; value=0x7F -> size=2
+printf '\x02\x02\x78\x7f' > /src/seeds_iotmp/error_f15_127.bin
+
+# 6) CONNECT con PSON vacío (wire type = 1), body = 0x09 0x00
+# 0x09 = key con wire=1 (PSON) y fid=1; 0x00 = PSON vacío mínimo (según implementación)
+# => size=2 para que encaje exactamente con el body
+printf '\x03\x02\x09\x00' > /src/seeds_iotmp/connect_empty_pson.bin
+
+# 7) RUN con stream_id=0 (varint simple), body=0x08 0x00 -> size=2
+printf '\x06\x02\x08\x00' > /src/seeds_iotmp/run_sid0.bin
+
+# 8) START con PSON vacío: body=0x09 0x00 -> size=2
+printf '\x08\x02\x09\x00' > /src/seeds_iotmp/start_empty_pson.bin
+
+```
+
+### **4. Lanzar AFL++:**
 
 - ***FUZZING con ASAN***
     
@@ -430,8 +396,9 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
     
     ![image.png](attachment:318f8592-60d6-4b2a-a9de-b199feef8669:image.png)
     
-
 - ***FUZZING sin ASAN***
+    
+    Aquí usamos el binario sin **ASAN**: `/src/install/iotmp_harness_noasan`.
     
     ```bash
     mkdir -p /src/out_iotmp_noasan
@@ -441,12 +408,14 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
     /src/install/iotmp_harness_noasan
     ```
     
-    - Usa el binario **no ASAN**: `/src/install/iotmp_harness_noasan`.
-    - Aquí puedes poner memoria fija (p. ej. `m 1024`). Si prefieres, deja `m none`.
+    - En el fuzzing con ASAN, el propio AddressSanitizer añade un gran overhead de memoria, por lo que si imponemos un límite hay riesgo de vetar ejecuciones válidas, por eso hemos utilizado `-m none` .
+        
+        Por el contrario, en el fuzzing sin ASAN, el binario es ligero y más rápido, por lo que un límite de memoria (como `-m 1024`) actúa como protección de seguridad: evita que entradas maliciosas provoquen consumos descontrolados de RAM o falsos positivos de OOM.
+        
     
     ![image.png](attachment:3403ae76-d8d2-4629-b860-dfd14ea1e9e7:image.png)
     
-- **¿Dónde guarda AFL++ lo que genera?**
+- **¿Dónde guarda AFL++ los outputs que genera?**
     
     ```bash
     /src/out_iotmp_asan/default/
@@ -458,28 +427,9 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
     └─ .cur_input          # último input probado (temporal)
     ```
     
-    Los nombres de archivo incluyen metadatos:
-    
-    ```bash
-    id:000123,src:000045,time:...,op:havoc,rep:2
-    ```
-
----
 
 ### **5. Observar y afinar:**
 
-- **¿Es normal ver más crashes sin ASAN?**
-    
-    **Sí, totalmente normal**, por varias razones:
-    
-    - **Overhead/alejado de memoria**: ASAN añade *redzones* y cambia el *layout* de memoria; algunos *wild writes* dejan de golpear regiones “críticas” y no provocan SIGSEGV (aunque ASAN los reportaría si tocan sus zonas vigiladas).
-    - **Timing**: sin ASAN el binario va **más rápido** → más ejecuciones → más oportunidades de entrar en estados inestables (y crash).
-    - **Detección vs. terminación**: ASAN *detecta* corrupciones y aborta con informes detallados; sin ASAN, muchas corrupciones se manifiestan como **SIGSEGV** en puntos aleatorios (sumando “crashes” distintos pero del **mismo bug**).
-    
-    👉 Por eso el **flujo sano** es:
-    
-    1. Fuzz con **ASAN** para encontrar y **entender** (backtrace).
-    2. Fuzz **sin ASAN** para **confirmar** y ver estabilidad/impacto (SIGSEGV real).
 1. ***Minimizar POCs (ASAN y no-ASAN)***
     - ASAN:
         
@@ -488,7 +438,7 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         ```
         
         ```bash
-        # Minimiza TODOS los crashes de la campaña ASAN contra el binario ASAN
+        # Minimizar todos los crashes de la campaña ASAN contra el binario ASAN
         for c in /src/out_iotmp_asan/default/crashes/id:*; do
           b=$(basename "$c")
           afl-tmin -i "$c" -o "/src/iotmp_min/asan/$b.min" -- /src/install/iotmp_harness_dbg
@@ -502,7 +452,7 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         ```
         
         ```bash
-        # Minimiza TODOS los crashes de la campaña NO-ASAN contra el binario ASAN
+        # Minimizar todos los crashes de la campaña NO-ASAN contra el binario ASAN
         # (usar ASAN para minimizar da señales de error más fiables)
         for c in /src/out_iotmp_noasan/default/crashes/id:*; do
           b=$(basename "$c")
@@ -513,7 +463,7 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
 2. ***Triage con símbolos***
     - ¿En qué consiste?
         
-        Ejecutar cada PoC con el binario ASAN para que el sanitizer te diga qué tipo de bug es y dónde ocurrió (backtrace con funciones y líneas).
+        Ejecutar cada POC (Proof Of Concept) con el binario ASAN para que el sanitizer te diga qué tipo de bug es y dónde ocurrió (backtrace con funciones y líneas).
         
         Sirve para agrupar crashes que en realidad son el mismo bug y clasificar por tipo (heap-buffer-overflow, stack-bubffer-overflow, null-deref, etc.)
         
@@ -525,14 +475,13 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         ```
         
     2. Volcar informe + firma por cada PoC
-        - ¿Qué hace el script?
-            - Ejecuta el PoC con **ASAN**,
-            - Extrae el **tipo de bug** (línea `ERROR: AddressSanitizer: ...`),
-            - Captura las **3 primeras funciones** del backtrace como una **firma**,
-            - Y guarda todo en un CSV rápido para agrupar.
-        - Interpretación
-            - **asan_type** → la clase de bug (p. ej., *heap-buffer-overflow*).
-            - **signature** → primeras 2–3 funciones del backtrace “propias”; dos PoCs con la misma firma ⇒ **mismo bug** casi seguro.
+        
+        ¿Qué hace el script?
+        
+        - Ejecuta el PoC con **ASAN**,
+        - Extrae el **tipo de bug** (línea `ERROR: AddressSanitizer: ...`),
+        - Captura las **3 primeras funciones** del backtrace como una **firma**,
+        - Y guarda todo en un CSV rápido para agrupar.
         
         ```bash
         mkdir -p /src/iotmp_reports
@@ -643,22 +592,20 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         - **Interpretación:**
             - `sig:11 | src:000096` → signal 11 (SIGSEGV), el caso se originó a partir del input scr:000096
             - `sig:06 | src:000125` → signal 6 (SIGABRT), …
-            - `146x |` → clave caía (no se extrajo ni tipo de ASAN ni señal). Suele pasar si:
+            - `146x |` → clave vacía (no se extrajo ni tipo de ASAN ni señal). Suele pasar si:
                 - Ejecutaste algunos PoC **sin ASAN** en el paso de triage (entonces no hay línea `ERROR: AddressSanitizer:` y tu parser no detectó la señal), o
                 - El parser de logs no encontró ninguna coincidencia y dejó la clave en blanco.
             
             ![image.png](attachment:77a2fcc4-0c85-4d24-b52c-229f8c5335b9:image.png)
             
+        - `sig:11`→ signal 11 (SIGSEGV) → acceso inválido a memoria
+        - `sig:06`→ signal 6 (SIGABRT) → abort, típicamente lo provoca ASAN al detectar corrupción o un `assert/abort()` .
         
 4. ***Confirmar “crash real” (sin ASAN)***
-    - ¿Para que sirve esto?
-        
-        Convertir “muchos archivos en `crashes/`” en **pocos bugs** bien explicados:
-        
-        1. **Confirmar impacto real**: ejecutar un **PoC representativo por bug** con el **binario sin ASAN** y verificar que **crashea** (DoS real).
-        2. **Deduplicar**: agrupar *crashes* que comparten el **mismo backtrace/firma**, para contar **bugs únicos** (lo que de verdad importa).
-        3. **Empaquetar artefactos**: por cada bug único, guardar **PoC minimizado**, **backtrace ASAN** y una **frase** de causa/impacto.
-    1. Para los grupos principales (1 PoC representativo de cada firma), ejecuta el binario no ASAN y mira la señal:
+    
+    Queremos convertir los archivos de `crashes/` en **pocos bugs** bien explicados
+    
+    1. Para los grupos principales (1 POC representativo de cada firma), ejecutar el binario no ASAN y mirar la señal:
         
         ```bash
         for p in /src/iotmp_min/asan/*.min; do
@@ -668,7 +615,7 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         done
         ```
         
-        - Para el informe, basta con mostrar que **al menos** los principales se reproducen sin ASAN (DoS real).
+        Salida:
         
         ```
         [AFL++ 944ec74175c9] /src # for p in /src/iotmp_min/asan/*.min; do
@@ -750,38 +697,13 @@ Creamos 3–5 ejemplos mínimos de mensajes IoTMP (header varint + cuerpo). Sirv
         
         - Interpretación:
             
-            La lista `CRASH(noasan) ... (rc=139)` confirma **muchas reproducciones SIGSEGV sin ASAN** para PoCs minimizados; es el indicador fuerte de DoS.
+            La lista `CRASH(noasan) ... (rc=139)` confirma muchas reproducciones SIGSEGV sin ASAN para POCs minimizados; lo que es un indicador de potencial DoS.
             
 
-- **¿Qué tipo de bugs esperar/reportar?**
-    
-    Es muy probable encontrar:
-    
-    - **heap-buffer-overflow (HBO)**: escritura/lectura fuera de límites en estructuras PSON parcialmente construidas.
-        
-        *Síntoma típico:* backtrace en `memory_allocator::destroy<pson_array>` → `pson::~pson()` → `pson_container::clear()` → `iotmp_message::~iotmp_message()`.
-        
-    - **null-pointer dereference**: rutas que asumen cuerpos o campos válidos cuando no lo son (size/varint mal formados).
-    - **timeout/hang** (si sale en `hangs/`): bucles o lecturas que no avanzan cuando el header es inconsistente (menos común si pusimos límites de tamaño).
-    - **SEGV genérico** en no-ASAN: puede ser el mismo HBO manifiesto sin instrumentación.
+### 6. Conclusión:
 
----
+En las dos pruebas ejecutadas con AFL++ (con y sin ASAN) se registraron *crashes*, lo que confirma que el *decoder* de IOTMP tiene rutas de ejecución frágiles ante entradas malformadas. Con ASAN se guardaron 35 *crashes* y sin ASAN 38, con coberturas más o menos similares (alrededor del 26% con ASAN, frente a 21% sin ASAN). Es esperable que la campaña sin ASAN reporte más *crashes*, ya que el programa se ejecuta más rápido y cualquier corrupción en memoria termina provocando errores visibles. Por el contrario, ASAN ralentiza la ejecución, pero ofrece información más clara sobre el origen de los fallos, lo que facilita su análisis.
 
-### Conclusión:
+Los fallos observados se son SIGSEGV (segmentation fault) y SIGABRT, ambos problemas típicos de memoria. En resumidas cuentas, estos errores indican que el programa intentó leer o escribir en posiciones de memoria que no debía, acceder a datos inexistentes o manejar estructuras internas que estaban incompletas o dañadas. Todo esto apunta a una validación insuficiente de las longitudes y límites de los mensajes recibidos.
 
-- **Alcance:** Se ejecutaron dos campañas de AFL++ sobre un *harness* que inyecta bytes por `stdin` al **decoder IoTMP** (header varint + body de pares key–value).
-    - **ASAN (≈15 min):** 35 *crashes* guardados.
-    - **No-ASAN (≈15 min):** 38 *crashes* guardados.
-    - **Total observado:** 73 entradas de crash (35+38), con múltiples reproducciones **sin ASAN** (`rc=139`, SIGSEGV), lo que confirma **impacto DoS real**.
-- **Triage / agrupación:** El resumen automático generó una clave “vacía” (146×) por limitación del parser de logs; aun así, los *crashes* no-ASAN listados demuestran que un **conjunto sustancial** de PoCs provoca **SIGSEGV** consistente. Los restantes ítems aparecen etiquetados como `sig:11` (SIGSEGV) y `sig:06` (SIGABRT).
-- **Lectura funcional de los resultados:** La concentración de *crashes* reproducibles sin ASAN, junto con la naturaleza de los casos (inputs válidos mínimamente bien formados + mutaciones), indica **fragilidad en las rutas de parseo** del **body** (PSON/varint) y en la **limpieza de estructuras parcialmente construidas**. Esto es coherente con el patrón ya observado en ejecuciones anteriores: **heap-buffer-overflow**/corrupción al destruir contenedores PSON tras parseos abortados.
-- **Impacto:** Denegación de servicio (**DoS**) por caída del proceso. Dada la corrupción de heap observada con ASAN en campañas previas, no se descarta que el problema sea **potencialmente explotable** en configuraciones concretas (depende de *layout* y mitigaciones).
-- **Causas probables (síntesis):**
-    1. **Validación insuficiente** de `message_size`/varints y de los límites del *buffer* antes de consumir el payload.
-    2. **Construcción parcial** de nodos PSON sin marcar estado de corrupción/invalidación.
-    3. **Destructores/clear** que recorren estructuras incoherentes → accesos fuera de límites (**SIGSEGV**) o abortos (ASAN **SIGABRT**).
-- **Recomendaciones inmediatas:**
-    1. **Hardening del header:** rechazar varints sobre-largos; asegurar `message_size ≤ bytes_restantes` y ≤ **límite razonable** (p.ej., 2 MiB).
-    2. **Hardening PSON:** pre-chequeo de longitudes; guardas antes de `emplace/push`; bandera `corrupted_` + **“shallow clear”** en destructores si el parseo falla a mitad.
-    3. **Regresión:** añadir 1 PoC **minimizado** por bug (ASAN + no-ASAN) como tests que **deben fallar limpiamente** (error de parseo, sin crash).
-    4. **Re-fuzz corto** tras el parche para comprobar que **desaparecen** los *unique crashes*.
+Estos resultados evidencian un riesgo claro de denegación de servicio (DoS), ya que un atacante podría provocar la caída del proceso con entradas malformadas. Como medidas de mejora inmediatas, sería recomendable reforzar las comprobaciones sobre el tamaño de los mensajes, rechazar de forma estricta entradas imposibles y asegurarse de que, si un mensaje llega corrupto, el sistema lo descarte de forma segura en lugar de bloquearse.
