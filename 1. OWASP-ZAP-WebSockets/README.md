@@ -43,17 +43,17 @@ En resumen, OWASP ZAP es una herramienta muy adecuada para analizar las comunica
     
     Esto permitirá a la herramienta registrar todo el tráfico de entrada y salida del navegador.
     
-    ![image.png](attachment:b7fbc30c-f8c3-4d7d-8a93-a8bd7293ed1b:image.png)
+    <img width="957" height="900" alt="Image" src="https://github.com/user-attachments/assets/fb714b0f-deaf-4341-a1a7-7d0c39224100" />
     
 4. Generar un certificado SSL con ZAP e importarlo al navegador.
     
     Este permitirá capturar también tráfico SSL, de lo contrario, el navegador rechazaría cualquier conexión cifrada cuyo certificado no sea conocido.
     
-    ![image.png](attachment:09c27793-1114-40bf-b05e-34bb43d85fde:image.png)
+    <img width="611" height="221" alt="Image" src="https://github.com/user-attachments/assets/0186478b-60f0-4bc3-8ae5-3314b3bcca7d" />
+
+    <img width="1441" height="887" alt="Image" src="https://github.com/user-attachments/assets/cbbfffe4-62ba-41df-b897-fce29f7ad9c6" />
     
-    ![image.png](attachment:07e2d601-55d7-4ccb-9df0-fb34ed74c143:image.png)
-    
-    ![image.png](attachment:02e9bee9-6efc-4ae0-9789-933aad54c6e3:image.png)
+    <img width="952" height="876" alt="Image" src="https://github.com/user-attachments/assets/b2d05b20-ebac-49c8-a34d-825a6c6145ed" />
     
 
 ### 1. Ejecutar las pruebas con la herramienta
@@ -82,11 +82,11 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-    ![image.png](attachment:2f41c9ec-c681-4abf-9915-c61cfe6553c8:image.png)
+    <img width="1919" height="1018" alt="Image" src="https://github.com/user-attachments/assets/c597ab50-a27e-4359-b9b1-35718f4001ab" />
+
+    <img width="1920" height="1018" alt="Image" src="https://github.com/user-attachments/assets/755669d0-a47d-46d1-ac0a-e12ef4569fac" />
     
-    ![image.png](attachment:1e17af59-35fd-4a61-8dad-f13765e18e8a:image.png)
-    
-    ![image.png](attachment:e047d259-8091-4ec2-89c1-d449cd718cdb:image.png)
+    <img width="1919" height="955" alt="Image" src="https://github.com/user-attachments/assets/38a94545-95f7-49c7-ad96-67b9469037fa" />
     
     - **Responses:**
         
@@ -125,11 +125,10 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         {"action":"register","":"emptykey"}
         ```
         
-    
-    ![image.png](attachment:c1b43e77-3173-4057-8a54-3b8f2c8a242a:image.png)
-    
-    ![image.png](attachment:29cc72c0-af39-4b3e-ba2b-ed4717045e1a:image.png)
-    
+    <img width="1920" height="1014" alt="Image" src="https://github.com/user-attachments/assets/cff22a73-0dc9-4d4d-9c79-fff39c30fca7" />
+
+    <img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/0324e2a7-900f-4e9d-bc4b-1aa06899a0e7" />
+
     - **Responses:**
         
         ```json
@@ -146,7 +145,7 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-3. **Comandos desconocidos o modificados**
+2. **Comandos desconocidos o modificados**
     - El objetivo es cambiar un valor de acción (‘action’) válido por otros comandos maliciosos o no válidos que puedan activar comportamientos anómalos en el servidor.
     - Resultado esperado:
         - El servidor debe ignorarlos, rechazarlos o cerrar la conexión con error.
@@ -165,11 +164,12 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         {"action":"🚀launch"}
         {"action":"%00"}
         ```
-        
+
+   
+    <img width="1920" height="1018" alt="Image" src="https://github.com/user-attachments/assets/b5b3e59a-99af-41c7-914e-9eb95b976aa6" /> 
     
-    ![image.png](attachment:bddf39ef-53fe-49a3-be44-bf3f2e4e19f8:image.png)
-    
-    ![image.png](attachment:faf458df-a298-463f-a545-66c193032975:image.png)
+    <img width="1920" height="1018" alt="Image" src="https://github.com/user-attachments/assets/71420aba-fa85-45db-b029-6ea264225ab4" />
+
     
     - **Responses:**
         
@@ -187,7 +187,7 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-4. **Evasión por formato/*encoding*/duplicados**
+3. **Evasión por formato/*encoding*/duplicados**
     - Se envían codificaciones raras o caracteres escapados que puedan saltarse alguna validación.
     - Resultado esperado:
         - El servidor debe ignorarlos, rechazarlos o cerrar la conexión con error.
@@ -208,9 +208,9 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-    ![image.png](attachment:00d8f789-6385-48f1-8fff-fb5357b6b500:image.png)
-    
-    ![image.png](attachment:bcc3357c-9be4-4d36-ad09-4a5221b892f4:image.png)
+    <img width="1920" height="1015" alt="Image" src="https://github.com/user-attachments/assets/eb65692d-cc61-416c-9302-03fb6d41e7fc" />
+
+    <img width="1920" height="1019" alt="Image" src="https://github.com/user-attachments/assets/f2fb5807-4e5a-4f92-9703-e522fc8e1c09" />
     
     - **Responses:**
         
@@ -228,7 +228,7 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-5. **Mensajes muy grandes**
+4. **Mensajes muy grandes**
     - El objetivo es enviar mensajes con grandes cantidades de datos para probar si se puede sobrecargar el servicio por tamaño o anidación de campos.
     - Resultado esperado:
         - El servidor debería tener un tamaño límite y cortar si el mensaje se pasa de esa longitud.
@@ -247,9 +247,9 @@ Se ha decidido descomponer el test en 5 subpruebas que verifican distintas cuali
         ```
         
     
-    ![image.png](attachment:42d139dc-b7ef-4ca3-8012-34f272a103d5:image.png)
-    
-    ![image.png](attachment:4f21ec76-022c-443e-8719-e6c42a0b3377:image.png)
+    <img width="1920" height="1021" alt="Image" src="https://github.com/user-attachments/assets/1717c511-9c7e-46f4-86e2-d6fbf184d95a" />
+
+    <img width="1920" height="1017" alt="Image" src="https://github.com/user-attachments/assets/8bac8d88-1d76-4540-a35a-9da9787e64c6" />
     
     - **Responses:**
         
