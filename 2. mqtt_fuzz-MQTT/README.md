@@ -43,9 +43,9 @@ En este caso, hay que llevar a cabo bastantes procesos antes de proceder al fuzz
     
     - Siempre que se fije la misma semilla (`-seed 4`), se obtendrá el mismo resultado.
     
-    ![image.png](attachment:c573ad8e-2885-44b2-9ac8-3d684808fd90:image.png)
+    <img width="943" height="92" alt="Image" src="https://github.com/user-attachments/assets/23aeadf3-e84d-471e-b5d7-2d4bec035046" />
     
-    ![image.png](attachment:bfcaefd6-fe72-4574-b31e-808bacbaebc7:image.png)
+    <img width="950" height="719" alt="Image" src="https://github.com/user-attachments/assets/022a4cca-c7ff-44f7-9fb7-57c945524dc8" />
     
 2. Instalar mqtt_fuzz:
     - mqtt_fuzz requiere:
@@ -85,7 +85,7 @@ En este caso, hay que llevar a cabo bastantes procesos antes de proceder al fuzz
         source ~/.zshrc
         ```
         
-        ![image.png](attachment:e7891bf6-fd4b-4c0f-b35c-9c953b5c3730:image.png)
+        <img width="928" height="177" alt="Image" src="https://github.com/user-attachments/assets/d56abb56-6163-4b76-a952-d29a2c509e4a" />
         
     3. Instalar mqtt_fuzz y sus dependencias dentro del entorno virtual creado
         
@@ -101,7 +101,7 @@ En este caso, hay que llevar a cabo bastantes procesos antes de proceder al fuzz
         pip install -r requirements.txt
         ```
         
-        ![image.png](attachment:73f80958-9ccb-4269-b725-188e3a08eb6e:image.png)
+        <img width="935" height="107" alt="Image" src="https://github.com/user-attachments/assets/82a1f765-010e-4813-84e9-b5e15d4f6d5a" />
         
 
 1. Comprobación rápida de que todo está bien instalado
@@ -119,7 +119,7 @@ En este caso, hay que llevar a cabo bastantes procesos antes de proceder al fuzz
         radamsa --help | head -n 1
         ```
         
-        ![image.png](attachment:0b18c5aa-0f6a-489b-8111-52389fde452b:image.png)
+        <img width="940" height="789" alt="Image" src="https://github.com/user-attachments/assets/b5932adf-4253-4ddc-8a51-1b99f8229e2d" />
         
 
 ### 1. Crear un dispositivo MQTT en Thinger y confirmar que se puede conectar
@@ -130,7 +130,7 @@ Esto también no servirá para validar las credenciales.
 
 1. Crear un dispositivo en el dashboard de la plataforma
     
-    ![image.png](attachment:c03463bb-1fd9-48b6-8aa6-2a0fbd8aaeb0:image.png)
+    <img width="952" height="808" alt="Image" src="https://github.com/user-attachments/assets/49dd72e8-45c3-4767-85b0-00d2e46a4e3a" />
     
 2. Guardar las credenciales como variables de entorno y probar una publicación simple:
     
@@ -153,7 +153,7 @@ Esto también no servirá para validar las credenciales.
       -t sanity/test -m '{"ok":1}'
     ```
     
-    ![image.png](attachment:759abb75-e1b8-47fd-aeb9-297c5f3475cb:image.png)
+    <img width="942" height="309" alt="Image" src="https://github.com/user-attachments/assets/c2e7d424-0da4-45d1-a4b3-c09f7a3e7add" />
     
 3. Si quisiésemos ver en otra terminal como se publican los mensajes, podríamos suscribirnos al mismo en la otra terminal tema de la siguiente manera:
     
@@ -174,7 +174,7 @@ Esto también no servirá para validar las credenciales.
       -t 'sanity/#' -v
     ```
     
-    ![image.png](attachment:9114ebef-cf3c-4c2a-891d-d49e7a50341e:image.png)
+    <img width="945" height="699" alt="Image" src="https://github.com/user-attachments/assets/920b290e-d7f3-487e-ad67-40ea07c90de1" />
     
 
 ### 2. Generar semillas válidas desde tráfico real con *tshark*
@@ -208,7 +208,7 @@ Esta prueba se va a separar en distintos grupos, según el tipo de mensaje MQTT.
 
 Cada tipo de mensaje MQTT, tiene un código `mqtt.msgtype` distinto y una forma de enviar el mensaje (sub/pub, flags, …) diferente. Por ello, cada seed requiere una secuencia distinta para ser capturada.
 
-![image.png](attachment:3e78249f-b8a6-4592-987d-374642cb43a4:image.png)
+<img width="609" height="104" alt="Image" src="https://github.com/user-attachments/assets/56481498-644d-4cf1-aa4e-83bcb832f791" />
 
 No obstante aquí se presenta el caso básico (CONNECT básico con Auth):
 
@@ -448,7 +448,7 @@ docker logs -f <container-id>
 
 - **Prueba CONNECT**
     
-    ![image.png](attachment:47cb37ce-96c2-451f-bbb8-8aa6eaae1f4a:image.png)
+    <img width="950" height="783" alt="Image" src="https://github.com/user-attachments/assets/70efd091-1e9b-4b2c-b0b2-696c75e6bda4" />
     
     - En *log* del *fuzzer* aparece “Connection to MQTT server lost: … Connection Done”. Esto podría parecer un error, pero es el ciclo normal de cierre que ocurre cuando el *fuzzer* envía el DISCONNECT.
     - Aparecen muchos más CONNECTs enviados que ‘Sessions’, no obstante, esto tiene sentido. El nº de sesiones es el número de veces que el *fuzzer* abre un *socket* TCP y llega al estado “Connected to server”. Por otra parte, en nº de CONNECTs enviado es el total de frames MQTT de este tipo que el fuzzer inyecta por el socket. Mientras ya hay una sesión abierta, el *fuzzer* sigue inyectando CONNECTs aunque el broker no los vaya a aceptar, por eso es normal que hay bastantes más.
@@ -458,7 +458,7 @@ docker logs -f <container-id>
     
 - **Prueba PUBLISH**
     
-    ![image.png](attachment:40511fb7-7e32-4293-b71d-7606d2e6c792:image.png)
+    <img width="952" height="697" alt="Image" src="https://github.com/user-attachments/assets/212bce45-8576-40e5-857e-aab81c9cb4e1" />
     
     - En este caso tampoco aparecen errores ni excepciones en el *log* del *broker*.
     - En el *log* del *fuzzer* vuelven a aparecer los mensajes de “Connection to MQTT server lost: …”, que como se ha mencionado antes, son completamente normales.
@@ -468,7 +468,7 @@ docker logs -f <container-id>
     
 - **Prueba SUBSCRIBE/UNSUBSCRIBE**
     
-    ![image.png](attachment:29c09f0e-8374-4bd8-9644-0b3757f09de4:image.png)
+    <img width="951" height="682" alt="Image" src="https://github.com/user-attachments/assets/d265a4a2-efbf-4bc4-9986-34a1ae41a43e" />
     
     - Todos los CONNACKs tienen “rc_ok”, por lo que no se ha rechazado ninguna conexión.
     - Todas las sesiones abiertas se llegan a cerrar limpiamente a excepción de la última.
@@ -485,7 +485,7 @@ docker logs -f <container-id>
     
 - **Prueba PINGREQ/DISCONNECT**
     
-    ![image.png](attachment:38bbb859-2d28-4c3c-b1ca-40f4a66bfdd5:image.png)
+    <img width="954" height="777" alt="Image" src="https://github.com/user-attachments/assets/c13679c8-bfe7-4546-8e3a-d2b3f0cf655e" />
     
     - Todos los CONNACKs tienen “rc_ok”, por lo que no se ha rechazado ninguna conexión.
     - Todas las sesiones abiertas se llegan a cerrar limpiamente.
@@ -496,7 +496,7 @@ docker logs -f <container-id>
     
 - **Prueba QoS2 Handshake**
     
-    ![image.png](attachment:1772acec-c56b-46b1-8b29-8a685c40d8e3:image.png)
+    <img width="949" height="778" alt="Image" src="https://github.com/user-attachments/assets/0325fde8-ab0b-45cf-8c61-1e268e35dc80" />
     
     - Todos los CONNACKs tienen “rc_ok”, por lo que no se ha rechazado ninguna conexión.
     - Todas las sesiones abiertas se llegan a cerrar limpiamente.
