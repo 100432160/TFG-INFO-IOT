@@ -394,7 +394,7 @@ printf '\x08\x02\x09\x00' > /src/seeds_iotmp/start_empty_pson.bin
         - `-` separa flags de AFL del comando objetivo.
         - **Sin `@@`** porque tu harness lee **stdin**.
     
-    ![image.png](attachment:318f8592-60d6-4b2a-a9de-b199feef8669:image.png)
+    <img width="1202" height="759" alt="Image" src="https://github.com/user-attachments/assets/79a89d36-9ee8-48dc-a591-1f4dbc1158b6" />
     
 - ***FUZZING sin ASAN***
     
@@ -413,7 +413,7 @@ printf '\x08\x02\x09\x00' > /src/seeds_iotmp/start_empty_pson.bin
         Por el contrario, en el fuzzing sin ASAN, el binario es ligero y más rápido, por lo que un límite de memoria (como `-m 1024`) actúa como protección de seguridad: evita que entradas maliciosas provoquen consumos descontrolados de RAM o falsos positivos de OOM.
         
     
-    ![image.png](attachment:3403ae76-d8d2-4629-b860-dfd14ea1e9e7:image.png)
+    <img width="1189" height="744" alt="Image" src="https://github.com/user-attachments/assets/b90c33e9-d891-4dbf-a35e-ce65d57caeca" />
     
 - **¿Dónde guarda AFL++ los outputs que genera?**
     
@@ -596,7 +596,7 @@ printf '\x08\x02\x09\x00' > /src/seeds_iotmp/start_empty_pson.bin
                 - Ejecutaste algunos PoC **sin ASAN** en el paso de triage (entonces no hay línea `ERROR: AddressSanitizer:` y tu parser no detectó la señal), o
                 - El parser de logs no encontró ninguna coincidencia y dejó la clave en blanco.
             
-            ![image.png](attachment:77a2fcc4-0c85-4d24-b52c-229f8c5335b9:image.png)
+            <img width="632" height="92" alt="Image" src="https://github.com/user-attachments/assets/c305eab1-1370-4304-9114-f3aa6847695a" />
             
         - `sig:11`→ signal 11 (SIGSEGV) → acceso inválido a memoria
         - `sig:06`→ signal 6 (SIGABRT) → abort, típicamente lo provoca ASAN al detectar corrupción o un `assert/abort()` .
