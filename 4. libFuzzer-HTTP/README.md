@@ -631,7 +631,7 @@ Ya podemos ejecutar el fuzzing para las dos pruebas:
 
 - ***HARNESS 1 →  Prueba del parsing de cookies***
     
-    ![image.png](attachment:4f4cea94-0069-4d3b-b2b8-1c682dd25d61:image.png)
+    <img width="1071" height="855" alt="Image" src="https://github.com/user-attachments/assets/c5a94138-9c6a-4c91-889f-5f861195095a" />
     
     1. El *fuzzer* muestra signos de que se ha expandido: aumenta la cobertura (*coverage features, ft*; y *coverage counters, cov*) y el directorio de corpus se llena de nuevos casos de prueba generados por el *libFuzzer*.
     2. El uso máximo de memoria es de ~490 MB, muy por debajo del límite fijado.
@@ -639,9 +639,9 @@ Ya podemos ejecutar el fuzzing para las dos pruebas:
     
 - ***HARNESS 2 → Prueba del parsing de mensajes HTTP***
     
-    ![image.png](attachment:ec860f1d-10b5-44e5-a09d-143cfff37e8c:image.png)
-    
-    ![image.png](attachment:f864a833-93cf-43b2-839a-d27017076186:image.png)
+    <img width="948" height="126" alt="Image" src="https://github.com/user-attachments/assets/103265e5-689a-4796-9480-7eafa6b1a0cf" />
+
+  <img width="1082" height="878" alt="Image" src="https://github.com/user-attachments/assets/022fcc58-5920-4cf9-97e7-b658d38f6f87" />
     
     1. La cobertura se expande (se muestra en métricas del *log* de la terminal como *cov* o *ft*, y en los nuevos casos de *test* que se generan en el directorio del *corpus*).
     2. Aparece un error en los *logs* de la terminal:[error] the response size exceeds the maximum allowed file size: ... (8388608 max)
